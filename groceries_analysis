@@ -1,0 +1,23 @@
+import pandas as pd
+from mlxtend.frequent_patterns import apriori, association_rules
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.data import load_dataset
+
+# 1. Load dataset
+dataset = load_dataset('groceries')
+
+# 2. One-hot encoding
+te = TransactionEncoder()
+te_ary = te.fit(dataset).transform(dataset)
+df = pd.DataFrame(te_ary, columns=te.columns_)
+
+# 3. Frequent itemsets
+frequent_itemsets = apriori(df, min_support=0.02, use_colnames=True)
+
+# 4. Association rules
+rules = association_rules(frequent_itemsets, metric="lift", min_threshold=1.0)
+
+# 5. Sort and show top rules
+rules = rules.sort_values(by=["lift", "confidence"], ascending=[False, False])
+print("Top 10 Association Rules:")
+print(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']].head(10))
